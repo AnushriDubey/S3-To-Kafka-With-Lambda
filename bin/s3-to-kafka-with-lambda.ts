@@ -1,21 +1,38 @@
 #!/usr/bin/env node
 import 'source-map-support/register';
-import * as cdk from 'aws-cdk-lib';
+import * as cdk from '@aws-cdk/core';
 import { S3ToKafkaWithLambdaStack } from '../lib/s3-to-kafka-with-lambda-stack';
+import {KafkaStack} from '../lib/kafka-stack';
+import {VpcStack} from "../lib/vpc-stack";
+import {KafkaTopicStack} from "../lib/kafka-topic-stack";
+import { S3BucketStack } from '../lib/s3-bucket-stack';
+import { S3TriggeredLambdaStack } from '../lib/s3-triggered-lambda-stack';
+import { LambdaErrorHandlingStack} from '../lib/lambda-error-handling-stack';
+import { ArchiveBucketStack } from '../lib/archive-bucket-stack';
+import { ApiTriggeredLambdaStack } from '../lib/api-triggered-lambda-stack';
+import { HTTPApiStack } from '../lib/http-api-stack';
 
 const app = new cdk.App();
-new S3ToKafkaWithLambdaStack(app, 'S3ToKafkaWithLambdaStack', {
-  /* If you don't specify 'env', this stack will be environment-agnostic.
-   * Account/Region-dependent features and context lookups will not work,
-   * but a single synthesized template can be deployed anywhere. */
 
-  /* Uncomment the next line to specialize this stack for the AWS Account
-   * and Region that are implied by the current CLI configuration. */
-  // env: { account: process.env.CDK_DEFAULT_ACCOUNT, region: process.env.CDK_DEFAULT_REGION },
+let vpcStack = new VpcStack(app, 'VpcStack');
 
-  /* Uncomment the next line if you know exactly what Account and Region you
-   * want to deploy the stack to. */
-  // env: { account: '123456789012', region: 'us-east-1' },
+let kafkaStack = new KafkaStack(vpcStack, app, 'KafkaStack');
+kafkaStack.addDependency(vpcStack);
 
-  /* For more information, see https://docs.aws.amazon.com/cdk/latest/guide/environments.html */
-});
+let kafkaTopicStack = new KafkaTopicStack(vpcStack, kafkaStack, app, 'KafkaTopicStack');
+kafkaTopicStack.addDependency(vpcStack);
+kafkaTopicStack.addDependency(kafkaStack);
+
+let archiveBucketStack = new ArchiveBucketStack(app, 'ArchiveBucketStack');
+
+let s3TriggeredLambdaStack = new S3TriggeredLambdaStack(vpcStack, kafkaStack, archiveBucketStack, app, 'S3TriggeredLambdaStack');
+s3TriggeredLambdaStack.addDependency(vpcStack);
+s3TriggeredLambdaStack.addDependency(kafkaStack);
+//s3TriggeredLambdaStack.addDependency(archiveBucketStack);
+
+let lambdaErrorHandlingStack = new LambdaErrorHandlingStack(s3TriggeredLambdaStack, app, 'LambdaErrorHandlingStack');
+lambdaErrorHandlingStack.addDependency(s3TriggeredLambdaStack);
+
+let apiTriggeredLambdaStack = new ApiTriggeredLambdaStack(app, 'ApiTriggeredLambdaStack');
+
+let httpApiStack = new HTTPApiStack(app, 'HTTPApiStack')
