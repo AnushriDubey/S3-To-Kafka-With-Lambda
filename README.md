@@ -1,10 +1,6 @@
 # deployment flow
 
-VpcStack
-KafkaStack
-KafkaTopicStack
-S3TriggeredLambdaStack
-LambdaErrorHandlingStack
+# VpcStack -> KafkaStack -> KafkaTopicStack -> S3TriggeredLambdaStack -> LambdaErrorHandlingStack
 
 # Welcome to your CDK TypeScript project!
 
