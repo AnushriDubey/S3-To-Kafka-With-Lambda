@@ -3,7 +3,7 @@ package com.nodomain;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
 import java.util.Map;
 import java.util.HashMap;
-
+import java.time.Instant;
 import java.util.List;
 import java.util.Date;
 
@@ -26,7 +26,7 @@ import com.amazonaws.services.lambda.runtime.LambdaLogger;
 public class CronScheduledLambdaHandler implements RequestHandler<ScheduledEvent, String> {
 
     private LambdaLogger logger;
-    private final int MAX_RETRY = 3;
+    private final int MAX_RETRY = 4;
     private final Region region = Region.US_EAST_2;
     private Utilities utilities;
 
@@ -76,7 +76,7 @@ public class CronScheduledLambdaHandler implements RequestHandler<ScheduledEvent
         Map<String, AttributeValue> filterValues = new HashMap<String, AttributeValue>();
         filterValues.put(":STATUS", new AttributeValue().withS("PENDING"));
         filterValues.put(":MAX_RETRY", new AttributeValue().withN(Integer.toString(MAX_RETRY)));
-        filterValues.put(":CURRENT_TIMESTAMP", new AttributeValue().withN(Long.toString(new Date().getTime())));
+        filterValues.put(":CURRENT_TIMESTAMP", new AttributeValue().withS(Instant.now().toString()));
 
         return utilities.getFailedEventsToRetry(MAX_RETRY, filterString, filterValues);
     }

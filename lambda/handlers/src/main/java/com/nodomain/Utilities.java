@@ -111,7 +111,7 @@ public class Utilities {
                     .withPrimaryKey("requestId", requestId)
                     .with("failedEvent", sqsEventString)
                     .with("eventStatus", "PENDING")
-                    .with("timeStamp", new Date().getTime())
+                    .with("timeStamp", Instant.now().toString())
                     .with("nextRunTimeStamp", nextRunInstant(Instant.now().toString(), 0))
                     .with("retryCount", 0));
         } else {

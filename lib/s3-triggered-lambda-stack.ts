@@ -82,6 +82,7 @@ export class S3TriggeredLambdaStack extends Stack {
 
     successTable.grantReadWriteData(this.lambdaFunction);
     s3Bucket.grantRead(this.lambdaFunction);
+    s3Bucket.grantDelete(this.lambdaFunction);
     archiveBucketStack.archiveBucket.grantWrite(this.lambdaFunction);
     
     //s3BucketStack.s3Bucket.addEventNotification(s3.EventType.OBJECT_CREATED, new LambdaDestination(this.lambdaFunction));
